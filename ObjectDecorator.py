@@ -16,10 +16,16 @@ class Trace:
 
 tracer = Trace()
 
+def normal_func():
+    print("a")
+
 @tracer
 def rotate_list(l):
     return l[1:] + [l[0]]
 
+
+print(type(rotate_list))
+print(type(normal_func))
 
 l = rotate_list([1,2,3,4])
 print(l)
