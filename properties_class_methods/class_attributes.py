@@ -70,12 +70,12 @@ class Shipping:
         return owner_code+'U'+str(serial).zfill(6)
 
     @classmethod
-    def create_empty(cls, owner_code):
-        return cls(owner_code, contents = None)
+    def create_empty(cls, owner_code, *args, **kwargs):
+        return cls(owner_code, contents = None, *args, **kwargs)
 
     @classmethod
-    def create_with_list(cls, owner_code, items):
-        return cls(owner_code, contents = list(items))
+    def create_with_list(cls, owner_code, items, *args, **kwargs):
+        return cls(owner_code, contents = list(items), *args, **kwargs)
 
     # This can be easily overwritten
     def non_static(self):
@@ -90,6 +90,8 @@ class Shipping:
 
 class RefrigeratedShipping(Shipping):
 
+    MAX_CELSIUS = 4.0
+
     # This is overridden without any issues
     def non_static(self):
         print("This is a refrigerated shipping container")
@@ -101,3 +103,9 @@ class RefrigeratedShipping(Shipping):
     @staticmethod
     def _get_bic_code(owner_code, serial):
         return owner_code+'R'+str(serial).zfill(6) 
+
+    def __init__(self, owner_code, contents, celsius):
+        super().__init__(owner_code, contents)
+        if celsius > RefrigeratedShipping.MAX_CELSIUS:
+            raise ValueError("celsius value supplied cannot be greater than %", RefrigeratedShipping.MAX_CELSIUS)
+        self.celsius = celsius
