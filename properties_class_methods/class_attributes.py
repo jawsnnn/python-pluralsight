@@ -44,8 +44,8 @@ class ClassContainer:
     # NOTE: The staticmethod decorator does not really add anything here
     @classmethod
     def _get_serial_num(cls):
-        result = cls.next_serial
-        cls.next_serial += 1
+        result = Shipping.next_serial
+        Shipping.next_serial += 1
         return result
 
     def __init__(self, type_code, contents):
@@ -58,15 +58,46 @@ class ClassContainer:
 
 class Shipping:
 
+    next_serial = 1337
 
     @classmethod
-    def create_empty(cls, typ):
-        return cls(typ, contents = None)
+    def _get_next_serial_num(cls):
+        Shipping.next_serial += 1
+        return Shipping.next_serial
 
     @classmethod
-    def create_with_list(cls, typ, items):
-        return cls(typ, contents = list(items))
+    def _get_bic_code(cls, owner_code, serial):
+        return owner_code+'U'+str(serial).zfill(6)
 
-    def __init__(self, typ, contents):
-        self.type_code = typ
+    @classmethod
+    def create_empty(cls, owner_code):
+        return cls(owner_code, contents = None)
+
+    @classmethod
+    def create_with_list(cls, owner_code, items):
+        return cls(owner_code, contents = list(items))
+
+    # This can be easily overwritten
+    def non_static(self):
+        print("This is a shipping container")
+
+    def __init__(self, owner_code, contents):
+        self.owner_code = owner_code
         self.contents = contents
+        # Polymorphism does not work with static methods
+        self.bic = self._get_bic_code(owner_code = self.owner_code,
+                serial = Shipping._get_next_serial_num())
+
+class RefrigeratedShipping(Shipping):
+
+    # This is overridden without any issues
+    def non_static(self):
+        print("This is a refrigerated shipping container")
+
+    # This will need to be called with the instant reference (self)
+    # in base class
+    # Polymorphism does not work with static methods
+    
+    @staticmethod
+    def _get_bic_code(owner_code, serial):
+        return owner_code+'R'+str(serial).zfill(6) 
